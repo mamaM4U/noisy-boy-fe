@@ -1,5 +1,4 @@
-import React from "react";
-import Title from "@/components/atomics/title";
+"use client";
 import {
   Carousel,
   CarouselContent,
@@ -7,9 +6,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/atomics/carousel";
-import listings from "@/json/listings.json";
+import Title from "@/components/atomics/title";
 import CardDeals from "@/components/molecules/card/card-deals";
 import { Listing } from "@/interfaces/listing";
+import { useGetAllListingsQuery } from "@/services/listing.service";
 
 interface ListingShowcaseProps {
   id: string;
@@ -18,6 +18,9 @@ interface ListingShowcaseProps {
 }
 
 function ListingShowcase({ id, title, subtitle }: ListingShowcaseProps) {
+
+  const {data: listings } = useGetAllListingsQuery({});
+  console.log("🚀 ~ ListingShowcase ~ listings:", listings)
   return (
     <section id={id} className="px-10 xl:container xl:mx-auto pt-16 pb-[100px]">
       <div className="flex justify-center text-center">
@@ -25,7 +28,7 @@ function ListingShowcase({ id, title, subtitle }: ListingShowcaseProps) {
       </div>
       <Carousel className="w-full mt-[30px]">
         <CarouselContent>
-          {listings.data.map((item: Listing, index: number) => (
+          {listings?.data?.data.map((item: Listing, index: number) => (
             <CarouselItem key={index} className="basis-1/4">
               <CardDeals
                 image={item.attachments?.[0] || ''}

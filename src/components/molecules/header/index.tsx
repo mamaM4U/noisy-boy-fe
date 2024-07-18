@@ -1,18 +1,18 @@
 'use client'
 import { Button } from '@/components/atomics/button'
-import Image from 'next/image'
-import Link from 'next/link'
-import { useState } from 'react'
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/atomics/dropdown-menu'
 import Title from '@/components/atomics/title'
+import { signOut, useSession } from 'next-auth/react'
+import Image from 'next/image'
+import Link from 'next/link'
 
 function Header() {
-    const [isLogin, setIsLogin] = useState(true)
+    const { data: session } = useSession();
 
     return (
       <header className="container mx-auto fixed inset-x-0 top-[30px] z-20">
@@ -44,7 +44,7 @@ function Header() {
           </nav>
 
           <div
-            data-login={isLogin}
+            data-login={!!session?.user}
             className="data-[login=true]:hidden data-[login=false]:flex items-center space-x-3"
           >
             <Button variant="secondary" size="header">
@@ -57,11 +57,11 @@ function Header() {
 
           <DropdownMenu>
             <DropdownMenuTrigger
-              data-login={isLogin}
-              className="data-[login=false]:block outline-none"
+              data-login={!!session?.user}
+              className="data-[login=false]:hidden outline-none"
             >
               <div className="flex items-center space-x-2">
-                <Title title="Ariana Xian" subtitle="Howdy" section="header" />
+                <Title title={session?.user.name} subtitle="Howdy" section="header" />
                 <Image
                   src="/images/avatar.webp"
                   alt="avatar"
@@ -80,9 +80,7 @@ function Header() {
               </DropdownMenuItem>
               <DropdownMenuItem>My Rentals</DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href="/sign-in">Logout</Link>
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => signOut()}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

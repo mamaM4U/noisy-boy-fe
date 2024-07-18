@@ -1,9 +1,10 @@
+import '@/app/globals.css';
+import { Toaster } from '@/components/atomics/toaster';
+import SideMenu from '@/components/molecules/admin/side-menu';
+import TopMenu from '@/components/molecules/admin/top-menu';
+import ReduxProvider from '@/providers/redux';
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
-import '@/app/globals.css';
-import TopMenu from '@/components/molecules/admin/top-menu';
-import SideMenu from '@/components/molecules/admin/side-menu';
-import { Toaster } from '@/components/atomics/toaster';
 
 const poppins = Poppins({ weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'], subsets: ['latin']});
 
@@ -23,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={poppins.className}>
+        <ReduxProvider>
         <div className="bg-gray-light">
           <div className="flex space-x-[30px] p-[30px] container mx-auto">
             <SideMenu />
@@ -33,6 +35,7 @@ export default function RootLayout({
           </div>
         </div>
         <Toaster />
+        </ReduxProvider>
       </body>
     </html>
   );

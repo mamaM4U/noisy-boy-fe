@@ -1,10 +1,6 @@
 "use client";
 import { Button } from "@/components/atomics/button";
 import { Checkbox } from "@/components/atomics/checkbox";
-import { Input } from "@/components/atomics/input";
-import Title from "@/components/atomics/title";
-import Image from "next/image";
-import Link from "next/link";
 import {
   Form,
   FormControl,
@@ -12,11 +8,17 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/atomics/form";
+import { Input } from "@/components/atomics/input";
+import Title from "@/components/atomics/title";
+import { useToast } from "@/components/atomics/use-toast";
+import { useLoginMutation } from "@/services/auth.service";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { signIn } from "next-auth/react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useRouter } from "next/navigation";
-import { useToast } from "@/components/atomics/use-toast";
 
 const schema = yup.object().shape({
   email: yup.string().email().required(),
@@ -27,6 +29,7 @@ type FormData = yup.InferType<typeof schema>;
 
 function SignIn() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const form = useForm<FormData>({
     resolver: yupResolver(schema),
@@ -36,15 +39,40 @@ function SignIn() {
     },
   });
 
-  function onSubmit(values: FormData) {
-    console.log("🚀 ~ onSubmit ~ values:", values);
-    form.reset();
-    toast({
-      title: "Welcome",
-      description: "Sign in successfully",
-      open: true,
-    });
-    router.push("/");
+  const [login, { isLoading }] = useLoginMutation();
+
+  async function onSubmit(values: FormData) {
+    try {
+      const res = await login(values).unwrap();
+
+      if(res.success){
+        const user = res.data;
+
+        const loginRes = await signIn("credentials", {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          token: user.token,
+          callbackUrl: searchParams.get("callbackUrl") || "/",
+          redirect: false
+        });
+
+        toast({
+          title: "Welcome",
+          description: "Sign in successfully",
+          open: true,
+        });
+        router.push(loginRes?.url||"/");
+      }
+      
+    // router.push("/");
+    } catch (error: any) {
+      toast({
+        title: "Something went wrong",
+        description: error.data.messge,
+        variant: "destructive",
+      });
+    }
   }
 
   return (
@@ -118,7 +146,7 @@ function SignIn() {
                 Remember me
               </label>
             </div>
-            <Button type="submit">Sign In</Button>
+            <Button type="submit" disabled={isLoading}>Sign In</Button>
             <Link href="/sign-up">
               <Button variant="third" type="button" className="mt-3">
                 Create New Account
